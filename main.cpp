@@ -65,7 +65,6 @@ int main(){
     pc.attach(SerialRX);
     //CAN
     canPort.frequency(1000000); //Bit Rate:1MHz
-//    canPort.attach(CANdataRX,CAN::RxIrq);
     int node1 = 1;  //CAN node Setting
     int node2 = 2;
     //User Setting
@@ -97,6 +96,7 @@ int main(){
             pc.printf("Send Enable Command\r\n");
             sendCtrlEN(node1);
             sendCtrlEN(node2);
+            canPort.attach(CANdataRX,CAN::RxIrq);
             Serialdata = 0;
             myled = 0b1111;
         }
