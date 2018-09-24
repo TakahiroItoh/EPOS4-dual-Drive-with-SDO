@@ -65,8 +65,9 @@ int main(){
     pc.attach(SerialRX);
     //CAN
     canPort.frequency(1000000); //Bit Rate:1MHz
-    canPort.attach(CANdataRX,CAN::RxIrq);
+//    canPort.attach(CANdataRX,CAN::RxIrq);
     int node1 = 1;  //CAN node Setting
+    int node2 = 2;
     //User Setting
     int rpm = 4000; //Velocity Setting[rpm]
     myled = 0b0001;
@@ -83,27 +84,8 @@ int main(){
     }
     Serialdata = 0;
     pc.printf("KEY DETECTED!!\r\nPROGRAM START\r\n");
-    wait(0.5);
-    //-------------起動時に必ず送信---------------
-    //オペレーティングモードを送信
-    pc.printf("Send Operating Mode\r\n");
-    sendOPMode(node1);
-    myled = 0b0011;
-    wait(0.1);
-    //コントロールワードのリセット
-    pc.printf("Send Reset Command\r\n");
-    sendCtrlRS(node1);
-    wait(0.1);
-    //Shutdown,Enableコマンド送信｜リセット
-    pc.printf("Send Shutdown Command\r\n");
-    sendCtrlSD(node1);
-    wait(0.1);
-    pc.printf("Send SW on & Enable Command\r\n");
-    sendCtrlEN(node1);
-    myled = 0b0111;
-    wait(0.1);
-    pc.printf("Press 't'=TgtVel 'h'=Halt 'q'=END 'v'=ActVel\r\n");
-    pc.printf("if EPOS4 dose not work. Press 'm'(set mode once again)\r\n");
+    pc.printf("At first, Press 'm'(set operating mode)\r\n");
+    pc.printf("'t'=TgtVel 'h'=Halt 'q'=END 'v'=ActVel\r\n");
     //-------------------------------------------
     while(1){
         //-------------送信コマンドを選択--------------
@@ -111,6 +93,10 @@ int main(){
             //目標速度を送信後、Enableコマンド送信
             pc.printf("Send Target Velocity\r\n");
             sendTgtVel(node1,rpm);
+            sendTgtVel(node2,rpm);
+            pc.printf("Send Enable Command\r\n");
+            sendCtrlEN(node1);
+            sendCtrlEN(node2);
             Serialdata = 0;
             myled = 0b1111;
         }
@@ -118,6 +104,7 @@ int main(){
             //Haltコマンド送信
             pc.printf("Send Halt Command\r\n");
             sendCtrlHL(node1);
+            sendCtrlHL(node2);
             Serialdata = 0;
             myled = 0b0111;
         }
@@ -125,8 +112,10 @@ int main(){
             //quick stopコマンド送信
             pc.printf("Send Quick Stop\r\nPROGRAM END\r\n");
             sendCtrlQS(node1);
+            sendCtrlQS(node2);
             pc.printf("Send Shutdown Command\r\n");
             sendCtrlSD(node1);
+            sendCtrlSD(node2);
             Serialdata = 0;
             break;
         }
@@ -139,22 +128,21 @@ int main(){
         else if(Serialdata == 'm'){
             pc.printf("Send Operating Mode\r\n");
             sendOPMode(node1);
+            sendOPMode(node2);
             myled = 0b0011;
-            wait(0.1);
             //コントロールワードのリセット
             pc.printf("Send Reset Command\r\n");
             sendCtrlRS(node1);
-            wait(0.1);
+            sendCtrlRS(node2);
             //Shutdown,Enableコマンド送信｜リセット
             pc.printf("Send Shutdown Command\r\n");
             sendCtrlSD(node1);
-            wait(0.1);
+            sendCtrlSD(node2);
             pc.printf("Send SW on & Enable Command\r\n");
             sendCtrlEN(node1);
+            sendCtrlEN(node2);
             myled = 0b0111;
-            wait(0.1);
             Serialdata = 0;
-            myled = 0b0111;
         }
         //-------------------------------------------
     }
@@ -177,6 +165,7 @@ void sendOPMode(int nodeID){
     */
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
+    wait(0.2);
 }
 
 //0x2B-6040-00-0000-//-//
@@ -195,6 +184,7 @@ void sendCtrlRS(int nodeID){
     */
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
+    wait(0.2);
 }
 
 //0x2B-6040-00-0006-//-//
@@ -213,6 +203,7 @@ void sendCtrlSD(int nodeID){
     */
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
+    wait(0.2);
 }
 
 //0x2B-6040-00-000F-//-//
@@ -231,6 +222,7 @@ void sendCtrlEN(int nodeID){
     */
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
+    wait(0.1);
 }
 
 //0x2B-6040-00-000B-//-//
@@ -249,6 +241,7 @@ void sendCtrlQS(int nodeID){
     */
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
+    wait(0.2);
 }
 
 //0x2B-6040-00-010F-//-//
@@ -267,6 +260,7 @@ void sendCtrlHL(int nodeID){
     */
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
+    wait(0.2);
 }
 
 //0x2B-60FF-00-[user data(4Byte)]
@@ -285,11 +279,7 @@ void sendTgtVel(int nodeID,int rpm){
     }
     printCANTX();          //CAN送信データをPCに表示
     canPort.write(canmsgTx);//CANでデータ送信
-    wait(0.5);
-    //send Enable
-    pc.printf("Send Enable Command\r\n");
-    sendCtrlEN(nodeID);
-    wait(0.5);
+    wait(0.2);
 }
 
 void readActVel(int nodeID){
