@@ -133,7 +133,7 @@ int main(){
             canPort.attach(CANdataRX,CAN::RxIrq);
             for(int count=0;count<200;count++){
                 readActVel(node1);
-                wait(0.05);
+                wait(0.04);
             }
             Serialdata = 0;
         }
@@ -313,11 +313,12 @@ void printCANTX(void){
 
 //受信データの表示
 void printCANRX(void){
-    char num=7;
+    char num;
+    num = canmsgRx.len;
     //0x canID|Byte0|Byte1|Byte2|Byte3|Byte4|Byte5|Byte6|Byte7|
     pc.printf("0x%3x|",canmsgRx.id);
     for(char i=0;i < canmsgRx.len;i++){
-        num = num - i;
+        num = num - 1;
         pc.printf("%02x",canmsgRx.data[num]);
     }
     pc.printf("\r\n");
