@@ -83,9 +83,18 @@ int main(){
     }
     Serialdata = 0;
     pc.printf("KEY DETECTED!!\r\nPROGRAM START\r\n");
+    //--------------------------------------------------------
+    //Shutdown,Enableコマンド送信｜リセット
+    pc.printf("Send Shutdown Command\r\n");
+    sendCtrlSD(node1);
+    sendCtrlSD(node2);
+    pc.printf("Send SW on & Enable Command\r\n");
+    sendCtrlEN(node1);
+    sendCtrlEN(node2);
+    myled = 0b0111;
+    //--------------------------------------------------------
     pc.printf("At first, Press 'm'(set operating mode)\r\n");
     pc.printf("'t'=TgtVel 'h'=Halt 'q'=END 'v'=ActVel\r\n");
-    //-------------------------------------------
     while(1){
         //-------------送信コマンドを選択--------------
         if(Serialdata == 't'){
@@ -130,10 +139,6 @@ int main(){
             sendOPMode(node1);
             sendOPMode(node2);
             myled = 0b0011;
-            //コントロールワードのリセット
-            pc.printf("Send Reset Command\r\n");
-            sendCtrlRS(node1);
-            sendCtrlRS(node2);
             //Shutdown,Enableコマンド送信｜リセット
             pc.printf("Send Shutdown Command\r\n");
             sendCtrlSD(node1);
