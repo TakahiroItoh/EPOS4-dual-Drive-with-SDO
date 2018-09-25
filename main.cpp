@@ -105,7 +105,6 @@ int main(){
             pc.printf("Send Enable Command\r\n");
             sendCtrlEN(node1);
             sendCtrlEN(node2);
-            canPort.attach(CANdataRX,CAN::RxIrq);
             Serialdata = 0;
             myled = 0b1111;
         }
@@ -131,7 +130,11 @@ int main(){
         else if(Serialdata == 'v'){
             //Actual Velocityを尋ねる
             pc.printf("Read Actual Velocity\r\n");
-            readActVel(node1);
+            canPort.attach(CANdataRX,CAN::RxIrq);
+            for(int count=0;count<200;count++){
+                readActVel(node1);
+                wait(0.05);
+            }
             Serialdata = 0;
         }
         else if(Serialdata == 'm'){
@@ -300,7 +303,7 @@ void readActVel(int nodeID){
 
 //送信データの表示
 void printCANTX(void){
-  //0x canID|Byte0|Byte1|Byte2|Byte3|Byte4|Byte5|Byte6|Byte7|
+    //0x canID|Byte0|Byte1|Byte2|Byte3|Byte4|Byte5|Byte6|Byte7|
     pc.printf("0x%3x|",canmsgTx.id);
     for(char i=0;i < canmsgTx.len;i++){
         pc.printf("%02x|",canmsgTx.data[i]);
@@ -310,10 +313,12 @@ void printCANTX(void){
 
 //受信データの表示
 void printCANRX(void){
-  //0x canID|Byte0|Byte1|Byte2|Byte3|Byte4|Byte5|Byte6|Byte7|
+    char num=7;
+    //0x canID|Byte0|Byte1|Byte2|Byte3|Byte4|Byte5|Byte6|Byte7|
     pc.printf("0x%3x|",canmsgRx.id);
     for(char i=0;i < canmsgRx.len;i++){
-        pc.printf("%02x|",canmsgRx.data[i]);
+        num = num - i;
+        pc.printf("%02x",canmsgRx.data[num]);
     }
     pc.printf("\r\n");
 }
